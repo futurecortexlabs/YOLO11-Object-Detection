@@ -1,8 +1,8 @@
 ---
-title: YOLO11 Object Detection Demo
-emoji: 🖼️
-colorFrom: blue
-colorTo: green
+title: Future Cortex Labs - Image AI Demo
+emoji: 🔍
+colorFrom: green
+colorTo: gray
 sdk: gradio
 sdk_version: "5.33.0"
 python_version: "3.10"
@@ -10,89 +10,69 @@ app_file: app.py
 pinned: false
 ---
 
-# YOLO11 Object Detection Demo
+# Future Cortex Labs | 画像AI開発デモ
 
-画像をアップロードすると、事前学習済みYOLO11モデルで物体検出を行うWebデモです。
+画像AIの開発力を実際に体験できる、相談導線つきポートフォリオです。
+既存の相談フォーム・GitHub・note・Hugging Faceへのリンクを使用しています。
 
-## できること
+## 機能
 
-- 画像アップロードによる物体検出
-- 検出結果を描画した画像の表示
-- 検出したクラス名、信頼度、バウンディングボックス座標の表表示
-- confidence threshold の調整
-- IoU threshold の調整
+- YOLO11n事前学習済みモデルによるCOCO 80クラスの物体検出
+- アップロード、信頼度・IoU設定、検出枠つき画像の保存
+- 検出数・種類数・推論時間、座標テーブル、UTF-8 BOM付きCSV
+- 入力なし・検出なし・処理失敗への案内、リセット
+- ファイル上限10MB、2,000万画素、長辺1920pxへ縮小
+- モデルの遅延ロードとキャッシュ、推論の直列化、待機上限10件
+- モバイル対応の紹介ページ、サービス説明、開発の流れ、FAQ、相談CTA
 
-## 使っている技術
+## 起動
 
-- Python
-- Gradio
-- Ultralytics YOLO
-- YOLO11n事前学習済みモデル
-- pandas
-- Pillow
+Python 3.10〜3.12を利用してください。
 
-## ローカル実行方法
+```powershell
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+.\.venv\Scripts\python.exe app.py
+```
+
+macOS / Linux:
 
 ```bash
-git clone https://github.com/futurecortexlabs/YOLO11-Object-Detection-Demo.git
-cd YOLO11-Object-Detection-Demo
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-python app.py
+python3 -m venv .venv
+.venv/bin/python -m pip install -r requirements.txt
+.venv/bin/python app.py
 ```
 
-Windows PowerShellの場合は、仮想環境の有効化コマンドを次のように実行します。
+http://localhost:7860 を開きます。初回推論時にUltralyticsのモデル重みを取得します。
+インターネット接続とプロジェクトへの書込権限が必要です。PORT環境変数でポート変更可。
+
+## Hugging Face Spaces
+
+Gradio SDKのSpaceへapp.py、style.css、requirements.txt、このREADMEを配置します。
+CPUでも動作します。初回モデル取得・スリープからの復帰には時間がかかります。
+本変更はデプロイや公開を自動では実施しません。
+
+## カスタマイズ
+
+- app.pyのCONTACT: 相談フォームURL
+- app.pyのHTML: ブランド、サービス紹介、各種プロフィールリンク
+- style.css: 配色・余白・レスポンシブ表示
+
+## データと検出の範囲
+
+画像はサーバーへ送信して推論します。アプリから学習には利用しません。
+Gradioの画像・CSVキャッシュは1時間を超えたものを10分間隔で削除します。
+ホスティング側のログ・バックアップは別途管理してください。
+縮小した場合、CSVの座標は出力画像基準です。信頼度は0〜1のモデル出力で、正解率の保証ではありません。
+傷・欠陥検出などの独自対象、動画、カメラ、外部システム連携はこのデモには未実装です。
+
+## 確認
 
 ```powershell
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
-python app.py
+.\.venv\Scripts\python.exe -m unittest discover -s tests -v
 ```
 
-起動後、ブラウザで表示されたローカルURLを開きます。
+モデル推論についてはUltralytics公式の[Predictドキュメント](https://docs.ultralytics.com/modes/predict/)を参照。
+公開・商用運用に用いるモデルとライブラリの利用条件は[Ultralytics公式](https://www.ultralytics.com/license)で確認してください。
 
-PyTorch 2.6以降が入っている環境で重み読み込みエラーが出る場合は、次のコマンドで依存関係を入れ直してください。
-
-```powershell
-pip install --upgrade --force-reinstall -r requirements.txt
-```
-
-## 今後の発展案
-
-このデモは、画像AIアプリケーションの基礎として発展させることができます。
-
-- 製品画像から傷や欠けを見つけるAI画像検査
-- 工場ライン向けの異常検知デモ
-- カメラ画像を使ったリアルタイム検査
-- 検出ログの保存と分析
-- 独自データで追加学習した検査モデルへの拡張
-
-今回はMVTec ADなどの外部データセットは使わず、学習も行いません。事前学習済みYOLOモデルによる推論のみを扱います。
-
----
-
-## 📩 Contact / お問い合わせ
-
-Consultation Form
-
-相談フォーム
-
-https://forms.gle/SaWGZFu8J7DgbytL7
-
----
-
-## 🌐 Follow My Work / 発信情報
-
-GitHub
-
-https://github.com/futurecortexlabs
-
-note
-
-https://note.com/future_cortex
-
-Hugging Face
-
-https://huggingface.co/FCTX
+[開発相談](https://forms.gle/SaWGZFu8J7DgbytL7) / [GitHub](https://github.com/futurecortexlabs) / [note](https://note.com/future_cortex) / [Hugging Face](https://huggingface.co/FCTX)
