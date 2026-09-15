@@ -1,33 +1,56 @@
 ---
-title: Future Cortex Labs - Image AI Demo
-emoji: 🔍
+title: FCTX | 画像AI・物体検出
+emoji: 🔎
 colorFrom: green
 colorTo: gray
 sdk: gradio
 sdk_version: "5.33.0"
-python_version: "3.10"
+python_version: "3.12"
 app_file: app.py
 pinned: false
+short_description: 画像から物体を検出・可視化。FCTXの画像AI開発を体験。
 ---
 
-# Future Cortex Labs | 画像AI開発デモ
+# FCTX | 画像AI・物体検出
 
-画像AIの開発力を実際に体験できる、相談導線つきポートフォリオです。
-既存の相談フォーム・GitHub・note・Hugging Faceへのリンクを使用しています。
+画像をアップロードすると、事前学習済みYOLO11nで物体検出を行う体験型ポートフォリオです。
+FCTXのアプリ実装・可視化・データ出力を体験し、開発相談につなげる構成です。
 
-## 機能
+## 実装済み
 
-- YOLO11n事前学習済みモデルによるCOCO 80クラスの物体検出
-- アップロード、信頼度・IoU設定、検出枠つき画像の保存
+- COCO 80クラス（人物・車・動物・日用品など）の物体検出
+- アップロード、Ultralytics同梱の写真2枚によるサンプル体験（実推論）
+- 信頼度・IoU設定、検出枠つき画像の保存
 - 検出数・種類数・推論時間、座標テーブル、UTF-8 BOM付きCSV
-- 入力なし・検出なし・処理失敗への案内、リセット
-- ファイル上限10MB、2,000万画素、長辺1920pxへ縮小
-- モデルの遅延ロードとキャッシュ、推論の直列化、待機上限10件
-- モバイル対応の紹介ページ、サービス説明、開発の流れ、FAQ、相談CTA
+- 画像・設定変更時の結果クリア、リセット、未入力・検出なし・失敗の案内
+- スマートフォン対応、開発サービス・FAQ・相談メモ・Googleフォームへの導線
+- 10MBのアップロード制限、2,000万画素の検証、長辺1920pxへの縮小
+- 推論の直列化、待機上限10件、一時キャッシュの期限削除
 
-## 起動
+## Hugging Face Spacesへの配置
 
-Python 3.10〜3.12を利用してください。
+1. Hugging FaceでSpaceを作成し、SDKに **Gradio** を選択します。
+2. 以下の6ファイルをSpaceリポジトリのルートへアップロードします。
+   - `app.py`
+   - `vision_ui.py`
+   - `style.css`
+   - `requirements.txt`
+   - `packages.txt`
+   - `README.md`
+3. ビルド完了後、Appタブでサンプル画像を選び「物体検出を実行」を押します。
+4. 結果画像・CSV・相談リンクを確認します。
+
+`dist/fctx-huggingface.zip` がある場合は展開して上記ファイルを配置してください。ZIPのままアップロードしても起動しません。
+モデル重みは初回推論時にUltralyticsから取得します。トークン不要。CPUで動作します。
+初回のモデル取得やSpaceのスリープ復帰には時間がかかります。ハードウェア・料金条件はHugging Face上で確認してください。
+`0.0.0.0:7860`で起動します。SpacesではPORTを変更する必要はありません。
+`packages.txt`はOpenCVのLinuxランタイムライブラリを追加します。
+
+このフォルダの旧PPE関連ファイルは今回のSpaceでは使用しません。`.venv`、`models`、`*.pt`、テスト、ローカル実行スクリプトは配置不要です。
+
+## ローカル実行
+
+Python 3.12を使用します。
 
 ```powershell
 python -m venv .venv
@@ -35,44 +58,41 @@ python -m venv .venv
 .\.venv\Scripts\python.exe app.py
 ```
 
-macOS / Linux:
+Linux/macOSでは`.venv/bin/python`に読み替えます。http://localhost:7860 を開いてください。
 
-```bash
-python3 -m venv .venv
-.venv/bin/python -m pip install -r requirements.txt
-.venv/bin/python app.py
-```
+## 表記・相談先の変更
 
-http://localhost:7860 を開きます。初回推論時にUltralyticsのモデル重みを取得します。
-インターネット接続とプロジェクトへの書込権限が必要です。PORT環境変数でポート変更可。
+- `vision_ui.py` のCONTACT：相談フォームURL
+- `vision_ui.py`：ブランド名、説明、プロフィールURL
+- `style.css`：配色・余白・モバイル表示
+- `README.md`先頭のtitle：Spacesで表示するタイトル
 
-## Hugging Face Spaces
+## データと検出範囲
 
-Gradio SDKのSpaceへapp.py、style.css、requirements.txt、このREADMEを配置します。
-CPUでも動作します。初回モデル取得・スリープからの復帰には時間がかかります。
-本変更はデプロイや公開を自動では実施しません。
+画像はサーバーに送信して推論します。アプリは画像を学習に使用しません。
+入力・出力・CSVは一時保存し、稼働中は1時間を超えたキャッシュを10分間隔で削除します。
+ホスティング側のログやバックアップは別途管理してください。機密・個人情報を含む写真は送信しないでください。
+縮小した場合の座標は出力画像基準です。推論時間にはモデル読込、待機、画像描画時間は含みません。
+信頼度は正解率の保証ではありません。業務導入前に現場データで検証してください。
+傷・不良品・ヘルメットなどの専用検出、動画・カメラ監視、通知、履歴DBは今回の実装範囲外です。
 
-## カスタマイズ
+## モデルと利用条件
 
-- app.pyのCONTACT: 相談フォームURL
-- app.pyのHTML: ブランド、サービス紹介、各種プロフィールリンク
-- style.css: 配色・余白・レスポンシブ表示
+YOLO11nのCOCO事前学習済み重みを利用します。FCTX独自学習のモデルではありません。
+サンプル写真はUltralyticsパッケージ同梱のbus.jpgとzidane.jpgです。
+Ultralyticsのコード・モデル・アセットの利用条件は公式ライセンスを確認し、公開・商用提供時の条件に従ってください。
 
-## データと検出の範囲
+- [YOLO11公式ドキュメント](https://docs.ultralytics.com/models/yolo11/)
+- [Ultralyticsライセンス](https://www.ultralytics.com/license)
+- [Spaces設定](https://huggingface.co/docs/hub/spaces-config-reference)
+- [Spaces依存関係](https://huggingface.co/docs/hub/spaces-dependencies)
 
-画像はサーバーへ送信して推論します。アプリから学習には利用しません。
-Gradioの画像・CSVキャッシュは1時間を超えたものを10分間隔で削除します。
-ホスティング側のログ・バックアップは別途管理してください。
-縮小した場合、CSVの座標は出力画像基準です。信頼度は0〜1のモデル出力で、正解率の保証ではありません。
-傷・欠陥検出などの独自対象、動画、カメラ、外部システム連携はこのデモには未実装です。
-
-## 確認
+## 検証
 
 ```powershell
-.\.venv\Scripts\python.exe -m unittest discover -s tests -v
+.\.venv\Scripts\python.exe -m unittest discover -s tests -p test_app.py -v
 ```
 
-モデル推論についてはUltralytics公式の[Predictドキュメント](https://docs.ultralytics.com/modes/predict/)を参照。
-公開・商用運用に用いるモデルとライブラリの利用条件は[Ultralytics公式](https://www.ultralytics.com/license)で確認してください。
+Windowsのローカル実行確認と、Hugging Face Linux上でのビルド・実行確認は別です。Space公開後に必ずサンプル推論を確認してください。
 
-[開発相談](https://forms.gle/SaWGZFu8J7DgbytL7) / [GitHub](https://github.com/futurecortexlabs) / [note](https://note.com/future_cortex) / [Hugging Face](https://huggingface.co/FCTX)
+[開発相談](https://docs.google.com/forms/d/e/1FAIpQLSeeW9u8w2cvZnnRlUIRfXD-mvKGBvxhFouMYS4FwKCDfhhw4w/viewform?usp=header) / [GitHub](https://github.com/futurecortexlabs) / [note](https://note.com/future_cortex) / [Hugging Face](https://huggingface.co/FCTX)
