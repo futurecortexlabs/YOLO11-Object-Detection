@@ -1,0 +1,35 @@
+name: Sync to Hugging Face
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: hugging-face-space-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check Hugging Face token
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          if [ -z "$HF_TOKEN" ]; then
+            echo "::error::Add HF_TOKEN in repository Settings > Secrets and variables > Actions, then rerun this workflow. The token needs write access to FCTX/YOLO11-Object-Detection."
+            exit 1
+          fi
+      - uses: actions/checkout@v6
+      - name: Sync Space files
+        uses: huggingface/hub-sync@v0.1.0
+        with:
+          github_repo_id: ${{ github.repository }}
+          huggingface_repo_id: FCTX/YOLO11-Object-Detection
+          repo_type: space
+          hf_token: ${{ secrets.HF_TOKEN }}
