@@ -1,0 +1,21 @@
+const {chromium}=require('C:/Users/futur/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+const assert=require('node:assert/strict');
+(async()=>{
+const b=await chromium.launch({headless:true,channel:'msedge'});const p=await b.newPage({viewport:{width:1440,height:1000}});const errors=[];p.on('pageerror',e=>errors.push(e.message));
+await p.goto('http://localhost:7863',{waitUntil:'networkidle'});
+assert.equal(await p.title(),'FCTX | 画像AI・物体検出');
+await p.getByRole('button',{name:'物体検出を実行 →',exact:true}).click();
+const status=p.getByRole('textbox',{name:'処理状況',exact:true});
+await p.waitForFunction(()=>[...document.querySelectorAll('textarea')].some(e=>e.value.includes('未入力')));
+await p.locator('input[type=file]').first().setInputFiles('.venv/Lib/site-packages/ultralytics/assets/bus.jpg');
+await p.waitForTimeout(1000);
+await p.getByRole('button',{name:'物体検出を実行 →',exact:true}).click();
+await p.waitForFunction(()=>[...document.querySelectorAll('textarea')].some(e=>e.value.startsWith('検出完了：')),null,{timeout:60000});
+console.log('RESULT',await status.inputValue());
+await p.getByText('検出データを見る・CSVで保存',{exact:true}).click();
+const href=await p.locator('a[href*="detections-"]').getAttribute('href');const response=await p.request.get(href);assert.equal(response.status(),200);assert.match(await response.text(),/class_name,confidence/);
+await p.screenshot({path:'docs/vision-desktop.png',fullPage:true});
+await p.getByRole('button',{name:'リセット',exact:true}).click();await p.waitForTimeout(1500);assert.equal(await p.locator('a[href*="detections-"]').count(),0);
+await p.setViewportSize({width:390,height:844});await p.screenshot({path:'docs/vision-mobile.png',fullPage:true});assert.ok(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));assert.deepEqual(errors,[]);
+console.log('PASS title, upload, real inference, CSV HTTP download, reset, mobile width, no browser errors');await b.close();
+})().catch(e=>{console.error(e);process.exit(1)});
